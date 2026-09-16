@@ -360,23 +360,7 @@ export default function RoofProAIPage() {
         .impact-card__title { font-weight: 700; font-size: 0.95rem; margin: 0 0 0.6rem; }
         .impact-card__desc { color: var(--text-2); font-size: 0.88rem; line-height: 1.55; margin: 0; }
 
-        /* Watch */
-        .watch { text-align: center; }
-        .watch__frame {
-          border: 1px dashed var(--surface-3); border-radius: 8px;
-          background: var(--surface-2); padding: 4rem 2rem; margin-bottom: 1.5rem;
-          position: relative;
-        }
-        .watch__play-ring {
-          width: 64px; height: 64px; border-radius: 50%;
-          border: 2px solid var(--surface-3); display: flex; align-items: center;
-          justify-content: center; margin: 0 auto 1.25rem; color: var(--text-3);
-        }
-        .watch__frame p { color: var(--text-3); margin: 0 0 0.4rem; font-size: 0.95rem; }
-        .watch__frame p.label { margin-bottom: 0.75rem; }
-        .watch__progress { height: 3px; background: var(--surface-3); border-radius: 2px; max-width: 320px; margin: 1.5rem auto 0; overflow: hidden; }
-        .watch__caption { color: var(--text-2); font-size: 0.95rem; line-height: 1.65; max-width: 480px; margin: 1.25rem auto 0; }
-
+        
         /* Episode Transition */
         .transition-grid { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: center; gap: 1rem; }
         .transition-card { background: var(--surface-2); border: 1px solid var(--surface-3); border-radius: 8px; padding: 1.4rem 1.3rem; }
@@ -612,7 +596,12 @@ export default function RoofProAIPage() {
           </p>
 
           <div className="hero__actions">
-            <button className="btn btn--primary">
+            <button
+              className="btn btn--primary"
+              onClick={() => {
+                window.open("https://roofpro-ai.onrender.com/", "_blank");
+              }}
+            >
               <PlayIcon /> Watch Demo
             </button>
 
@@ -850,22 +839,7 @@ export default function RoofProAIPage() {
         </div>
       </Section>
 
-      {/* Watch */}
-      <Section label="Watch" title="Product walkthrough">
-        <div className="watch">
-          <div className="watch__frame">
-            <div className="watch__play-ring"><PlayIcon /></div>
-            <p className="label" style={{ color: "var(--text-3)" }}>RoofPro AI Demo</p>
-            {/* EDIT ME: swap for a real recording once one exists — don't fake a demo */}
-            <p>Demo coming soon.</p>
-            <div className="watch__progress" />
-          </div>
-          <p className="watch__caption">
-            See the chatbot handle a roofing query, retrieve domain knowledge,
-            generate a response, and guide the customer through the interaction.
-          </p>
-        </div>
-      </Section>
+      
 
       {/* Episode Transition */}
       <Section label="Episode Transition" title="Where this fits in the season" className="section--wide">
