@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Automated SIP Market Decision System</title>
+<style>
+:root{--bg:#eef3f9;--white:#fff;--ink:#10203a;--muted:#68788f;--blue:#2463df;--navy:#123a8c;--soft:#e9f0ff;--line:#dbe3ee;--red:#d64a4a;--green:#15936a;--shadow:0 18px 50px #10203a20}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+body{display:flex;flex-direction:column;align-items:center;padding:18px 10px;gap:10px}
+#wrap{width:min(1100px,100%)}#stage{position:relative;aspect-ratio:16/9;overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+#bar{position:absolute;z-index:20;top:0;left:0;right:0;height:4px;background:var(--line)}#progress{height:100%;width:0;background:var(--blue)}
+.scene{position:absolute;inset:0;padding:5% 6% 8%;opacity:0;visibility:hidden;transition:opacity .4s;display:flex;flex-direction:column}.scene.active{opacity:1;visibility:visible}
+.kicker{display:flex;align-items:center;gap:9px;color:var(--navy);font-weight:800;font-size:clamp(12px,1.5vw,18px)}.num{width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:12px}
+h1{font-size:clamp(24px,3.2vw,42px);line-height:1.08;letter-spacing:-.035em;margin:10px 0 0}p.lead{font-size:clamp(11px,1.2vw,15px);line-height:1.5;color:var(--muted);max-width:720px;margin:9px 0 0}
+.center{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}.caption{position:absolute;bottom:0;left:0;right:0;padding:10px 7%;min-height:48px;text-align:center;background:linear-gradient(0deg,#fff 15%,#ffffffe8 70%,transparent);color:var(--muted);font-size:clamp(9px,1vw,13px)}
+.card{background:var(--white);border:1px solid var(--line);border-radius:13px;box-shadow:0 8px 25px #10203a10}.pill{display:inline-block;padding:6px 10px;border-radius:99px;background:var(--soft);color:var(--navy);font-size:11px;font-weight:800}
+.reveal{opacity:0;transform:translateY(10px)}.active .reveal{animation:up .55s ease forwards}.active .d1{animation-delay:.1s}.active .d2{animation-delay:.3s}.active .d3{animation-delay:.5s}.active .d4{animation-delay:.7s}@keyframes up{to{opacity:1;transform:none}}
+
+/* Scene 1 */
+.problem{display:grid;grid-template-columns:1fr 1fr;gap:22px;width:min(820px,100%);align-items:center}.phone{width:260px;max-width:100%;padding:14px;margin:auto}.phonebar{width:65px;height:8px;background:#ccd6e4;border-radius:8px;margin:0 auto 12px}.price{font-size:30px;font-weight:800}.mini-chart{height:90px;margin-top:8px}.mini-chart svg{width:100%;height:100%}.question{padding:20px}.question h3{font-size:17px;margin:0 0 12px}.opt{display:flex;justify-content:space-between;padding:9px 11px;border:1px solid var(--line);border-radius:8px;margin:6px 0;font-size:12px}.opt b{color:var(--blue)}
+/* Scenes 2,9 */
+.flow{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;width:100%}.node{min-width:145px;padding:15px;text-align:center;font-size:13px;font-weight:800}.node small{display:block;color:var(--muted);font-weight:500;margin-top:5px}.arrow{font-size:22px;color:var(--blue);font-weight:900}
+.lineflow{height:3px;background:var(--line);flex:1;min-width:20px;position:relative;overflow:hidden}.lineflow:after{content:"";position:absolute;width:32px;height:9px;top:-3px;left:-35px;background:var(--blue);animation:move 1.4s linear infinite}@keyframes move{to{left:100%}}
+/* Scene 3 */
+.api{width:min(760px,100%);display:grid;grid-template-columns:1fr 1fr;gap:10px}.apihead{grid-column:1/-1;background:#101d33;color:#fff;border-radius:11px;padding:12px;font:12px monospace}.apiitem{padding:15px}.apiitem label{font-size:10px;color:var(--muted);font-weight:800}.apiitem strong{display:block;font-size:23px;margin-top:5px}
+/* Scene 4 */
+.sheet{width:100%;overflow:hidden}.sheettitle{padding:10px 14px;background:#f6f8fb;border-bottom:1px solid var(--line);font-size:12px;font-weight:800}table{border-collapse:collapse;width:100%;font-size:clamp(7px,1vw,12px)}th,td{padding:9px;border-bottom:1px solid var(--line);border-right:1px solid #edf1f6;text-align:left;white-space:nowrap}th{color:var(--muted);background:#fafbfd}.hl{background:var(--soft);font-weight:700}
+/* Scene 5 */
+.metrics{width:min(850px,100%);display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.metric{padding:16px}.metric label{font-size:9px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.08em}.metric strong{display:block;font-size:clamp(18px,2.2vw,28px);margin-top:6px}.red{color:var(--red)}.trend{grid-column:1/-1;padding:13px}.trend svg{width:100%;height:90px}
+/* Scene 6 */
+.rules{width:min(650px,100%);display:flex;flex-direction:column;align-items:center;gap:8px}.rule{width:100%;padding:13px 16px;display:flex;justify-content:space-between;align-items:center;font-size:12px}.rule b{font-size:13px}.allocation{font-size:18px;color:var(--navy);font-weight:800}.connector{width:2px;height:14px;background:var(--line)}
+/* Scene 7 */
+.paths{width:min(900px,100%);display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.path{padding:14px 9px;text-align:center}.letter{width:27px;height:27px;border-radius:50%;display:grid;place-items:center;background:var(--blue);color:#fff;margin:auto auto 8px;font-weight:800}.path b{font-size:11px}.path p{font-size:9px;color:var(--muted);margin:6px 0}.path strong{font-size:16px;color:var(--navy)}.merge{margin-top:12px;background:var(--ink);color:#fff;padding:11px 22px;border-radius:99px;font-size:11px;font-weight:800}
+/* Scene 8 */
+.slack{width:min(650px,100%);overflow:hidden}.slackhead{background:#182131;color:#fff;padding:12px 16px;font-weight:800;font-size:12px}.alert{padding:18px}.alert h3{margin:0 0 12px;font-size:17px}.agrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.ai{padding:9px;background:#f6f8fb;border-radius:7px;font-size:11px}.ai span{display:block;color:var(--muted);font-size:9px;margin-bottom:2px}.action{margin-top:10px;padding:12px;background:var(--soft);border-radius:8px;text-align:center;color:var(--navy);font-weight:800;font-size:12px}
+/* Scene 10 */
+.final{text-align:center}.final h2{font-size:clamp(27px,4vw,51px);line-height:1.03;margin:0;letter-spacing:-.04em}.tags{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin:20px 0}.tags span{padding:7px 10px;border:1px solid var(--line);border-radius:99px;background:#f7f9fc;font-size:10px;font-weight:800}.finalflow{color:var(--navy);font-size:clamp(10px,1.2vw,15px);font-weight:800}
+#controls{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap}button{border:0;border-radius:99px;padding:8px 13px;background:var(--blue);color:#fff;font:700 11px Inter,Arial;cursor:pointer}button.secondary{background:#fff;color:var(--ink);border:1px solid var(--line)}button:hover{background:var(--navy)}button:disabled{opacity:.45;cursor:not-allowed}#dots{display:flex;gap:5px;margin-left:3px}.dot{width:7px;height:7px;border-radius:50%;background:#cbd5e2;cursor:pointer}.dot.on{background:var(--blue)}#status{font-size:10px;color:var(--muted);min-width:70px;text-align:center}
+@media(max-width:700px){body{padding:7px}.scene{padding:5% 5% 8%}.problem{grid-template-columns:1fr;gap:8px}.phone{width:190px;padding:10px}.price{font-size:23px}.question{padding:11px}.question h3{font-size:12px}.opt{padding:6px 8px;font-size:9px;margin:4px 0}.node{min-width:100px;padding:10px 7px;font-size:9px}.api{gap:6px}.apiitem{padding:9px}.apiitem strong{font-size:17px}.metrics{grid-template-columns:1fr 1fr;gap:6px}.metric{padding:9px}.paths{grid-template-columns:1fr 1fr;gap:6px}.path{padding:9px 5px}.slack .alert{padding:10px}.arch{}.caption{padding:8px 5%;font-size:8px}button{padding:7px 9px;font-size:9px}}
+</style>
+</head>
+<body>
+<div id="wrap"><div id="stage"><div id="bar"><div id="progress"></div></div>
+
+<section class="scene active" data-n="0">
+<div class="kicker"><span class="num">1</span>THE PROBLEM</div><h1>Daily SIP decisions, automated.</h1>
+<p class="lead">A rule-based workflow evaluates market conditions and sends a structured SIP allocation alert.</p>
+<div class="center"><div class="problem">
+<div class="phone card reveal d1"><div class="phonebar"></div><small style="color:var(--muted)">Market price</small><div class="price">₹1,396.45</div><b style="color:var(--red);font-size:11px">↓ Market correction</b><div class="mini-chart"><svg viewBox="0 0 260 90" preserveAspectRatio="none"><polyline points="0,18 35,25 70,20 105,38 140,35 175,52 210,66 260,78" fill="none" stroke="#2463df" stroke-width="3"/></svg></div></div>
+<div class="question card reveal d2"><h3>What should I invest today?</h3><div class="opt">Skip today <b>0%</b></div><div class="opt">Moderate dip <b>30%</b></div><div class="opt">Larger dip <b>50%</b></div><div class="opt">Major correction <b>75–100%</b></div></div>
+</div></div><div class="caption">Manual checking becomes a repeatable automated process.</div></section>
+
+<section class="scene" data-n="1">
+<div class="kicker"><span class="num">2</span>DAILY AUTOMATION</div><h1>The workflow starts automatically.</h1><p class="lead">A scheduled trigger starts the process at the configured time.</p>
+<div class="center"><div class="flow reveal d1"><div class="node card">⏰ Scheduler<small>Runs every day</small></div><div class="arrow">→</div><div class="node card">⚡ Automation<small>Starts workflow</small></div><div class="arrow">→</div><div class="node card">📡 Market API<small>Request data</small></div></div></div><div class="caption">The scheduler removes the need to remember when to check the market.</div></section>
+
+<section class="scene" data-n="2">
+<div class="kicker"><span class="num">3</span>MARKET DATA</div><h1>Latest market data becomes the input.</h1><p class="lead">The API provides the current price and daily movement for the calculation layer.</p>
+<div class="center"><div class="api"><div class="apihead reveal d1">GET /market-data → 200 OK</div><div class="apiitem card reveal d2"><label>CURRENT PRICE</label><strong>₹1,396.45</strong></div><div class="apiitem card reveal d2"><label>PREVIOUS CLOSE</label><strong>₹1,395.05</strong></div><div class="apiitem card reveal d3"><label>DAILY CHANGE</label><strong style="color:var(--green)">+0.10%</strong></div><div class="apiitem card reveal d3"><label>SOURCE</label><strong style="font-size:18px">Market API</strong></div></div></div><div class="caption">Raw market information is collected before any decision rule is applied.</div></section>
+
+<section class="scene" data-n="3">
+<div class="kicker"><span class="num">4</span>GOOGLE SHEETS</div><h1>The data is stored and calculated.</h1><p class="lead">Daily observations and calculated fields are brought into one structured record.</p>
+<div class="center"><div class="sheet card reveal d1"><div class="sheettitle">📊 SIP Market Data</div><table><thead><tr><th>Date</th><th>Price</th><th>Rolling High</th><th>Dip %</th><th>200 DMA</th><th>Trend</th><th>Decision</th><th>Change %</th></tr></thead><tbody><tr><td>Mar 16</td><td>₹1,420.20</td><td>₹1,680.27</td><td>-15.48%</td><td>₹1,450.10</td><td>DOWN</td><td>30%</td><td>-0.42%</td></tr><tr><td>Mar 17</td><td>₹1,395.05</td><td>₹1,680.27</td><td>-16.97%</td><td>₹1,448.60</td><td>DOWN</td><td>30%</td><td>-1.77%</td></tr><tr class="hl"><td>Mar 18</td><td>₹1,396.45</td><td>₹1,680.27</td><td>-16.89%</td><td>₹1,447.20</td><td>DOWN</td><td>30%</td><td>+0.10%</td></tr></tbody></table></div></div><div class="caption">Google Sheets acts as the storage and calculation layer in the workflow.</div></section>
+
+<section class="scene" data-n="4">
+<div class="kicker"><span class="num">5</span>MARKET INDICATORS</div><h1>The system evaluates market conditions.</h1><p class="lead">Dip percentage and the 200-day moving average provide different views of the market.</p>
+<div class="center"><div class="metrics"><div class="metric card reveal d1"><label>Current price</label><strong>₹1,396.45</strong></div><div class="metric card reveal d1"><label>Reference high</label><strong>₹1,680.27</strong></div><div class="metric card reveal d2"><label>Dip</label><strong class="red">-16.89%</strong></div><div class="metric card reveal d2"><label>200 DMA</label><strong>₹1,447.20</strong></div><div class="trend card reveal d3"><label style="font-size:10px;color:var(--muted);font-weight:800">TREND SIGNAL</label><svg viewBox="0 0 700 90" preserveAspectRatio="none"><line x1="0" y1="37" x2="700" y2="37" stroke="#cbd5e2" stroke-dasharray="6 5"/><polyline points="0,17 80,24 150,20 220,35 300,31 370,47 450,43 530,61 610,68 700,77" fill="none" stroke="#2463df" stroke-width="4"/><text x="555" y="30" font-size="11" fill="#68788f">200 DMA</text></svg><span class="pill">Trend: DOWN</span></div></div></div><div class="caption">Daily change, correction, and longer-term trend are separate signals.</div></section>
+
+<section class="scene" data-n="5">
+<div class="kicker"><span class="num">6</span>DECISION ENGINE</div><h1>Predefined rules turn data into an action.</h1><p class="lead">These are example rule-based allocation levels, not market predictions or guarantees.</p>
+<div class="center"><div class="rules"><div class="rule card reveal d1"><b>Check trend and dip</b><span>Market inputs</span></div><div class="connector"></div><div class="rule card reveal d2"><b>Apply configured conditions</b><span class="allocation">Rules</span></div><div class="connector"></div><div class="rule card reveal d3"><b>Determine SIP allocation</b><span class="allocation">0–100%</span></div><div class="pill reveal d4">Example levels: 0% · 30% · 50% · 75% · 100%</div></div></div><div class="caption">The system consistently applies the configured rules rather than predicting the market.</div></section>
+
+<section class="scene" data-n="6">
+<div class="kicker"><span class="num">7</span>ZAPIER PATHS</div><h1>Automation routes the selected outcome.</h1><p class="lead">Different market conditions can trigger different automated paths.</p>
+<div class="center" style="flex-direction:column"><div class="paths"><div class="path card reveal d1"><div class="letter">A</div><b>Lower allocation</b><p>Conditions match</p><strong>0–30%</strong></div><div class="path card reveal d2"><div class="letter">B</div><b>Moderate dip</b><p>Conditions match</p><strong>30–50%</strong></div><div class="path card reveal d3"><div class="letter">C</div><b>Larger dip</b><p>Conditions match</p><strong>50–75%</strong></div><div class="path card reveal d4"><div class="letter">D</div><b>Major correction</b><p>Conditions match</p><strong>75–100%</strong></div></div><div class="merge reveal d4">SELECTED RULE → SLACK ALERT</div></div><div class="caption">Zapier handles the routing automatically.</div></section>
+
+<section class="scene" data-n="7">
+<div class="kicker"><span class="num">8</span>SLACK ALERT</div><h1>The final result arrives as a concise alert.</h1><p class="lead">The alert contains the market values, indicators, and resulting rule-based allocation.</p>
+<div class="center"><div class="slack card reveal d1"><div class="slackhead"># sip-alerts</div><div class="alert"><h3>🚨 SIP MARKET ALERT</h3><div class="agrid"><div class="ai"><span>PRICE</span>₹1,396.45</div><div class="ai"><span>DIP</span>-16.89%</div><div class="ai"><span>TREND</span>DOWN</div><div class="ai"><span>CHANGE</span>+0.10%</div></div><div class="action">Suggested allocation: 30% of planned SIP</div></div></div></div><div class="caption">One message summarizes the conditions and the automated output.</div></section>
+
+<section class="scene" data-n="8">
+<div class="kicker"><span class="num">9</span>COMPLETE ARCHITECTURE</div><h1>One automated pipeline from trigger to alert.</h1><p class="lead">Each component has a defined role in the workflow.</p>
+<div class="center"><div class="flow reveal d1"><div class="node card">⏰ Schedule<small>Trigger</small></div><div class="arrow">→</div><div class="node card">📡 Market API<small>Data</small></div><div class="arrow">→</div><div class="node card">📊 Sheets<small>Storage + calculations</small></div><div class="arrow">→</div><div class="node card">⚙️ Rules<small>Decision</small></div><div class="arrow">→</div><div class="node card">⚡ Paths<small>Routing</small></div><div class="arrow">→</div><div class="node card">💬 Slack<small>Alert</small></div></div></div><div class="caption">Schedule → Market Data → Calculations → Decision → Routing → Notification.</div></section>
+
+<section class="scene" data-n="9">
+<div class="kicker"><span class="num">10</span>PROJECT SUMMARY</div><div class="center"><div class="final"><h2>Automated SIP<br>Market Decision System</h2><p class="lead" style="margin:12px auto">A structured, rule-based automation workflow for daily SIP monitoring and alerts.</p><div class="tags"><span>AUTOMATED</span><span>RULE-BASED</span><span>DATA-DRIVEN</span><span>DAILY MONITORING</span></div><div class="finalflow">SCHEDULE → API → SHEETS → RULES → ZAPIER → SLACK</div></div></div><div class="caption">Automate the process. Measure the conditions. Apply the rules. Make informed decisions.</div></section>
+</div></div>
+
+<div id="controls"><button id="back" class="secondary">← Back</button><button id="pause">Pause</button><button id="voice">Voice: On</button><button id="next" class="secondary">Next →</button><button id="replay">Replay</button><div id="dots"></div><span id="status">Scene 1 of 10</span></div>
+
+<script>
+(()=>{const S=[...document.querySelectorAll('.scene')],P=document.getElementById('progress'),D=document.getElementById('dots'),B=document.getElementById('back'),Q=document.getElementById('pause'),V=document.getElementById('voice'),N=document.getElementById('next'),R=document.getElementById('replay'),T=document.getElementById('status');
+const text=[
+"Every day, market prices change. Deciding whether to invest the full SIP amount, a smaller amount, or skip the day can become difficult when decisions are made manually. This project automates that process using predefined market rules.",
+"The workflow begins with a daily scheduled trigger. At the configured time, the automation starts and requests the latest market information.",
+"The system retrieves the latest market price, previous closing price, and daily change percentage through a market data API. This raw information becomes the input for the calculation stage.",
+"Google Sheets stores the daily observations and acts as the calculation layer. The system uses current price and historical information to calculate indicators such as the reference high, dip percentage, and moving average.",
+"The calculation engine evaluates the market condition. Dip percentage shows how far the current price is below the reference high, while the 200-day moving average provides a longer-term trend signal.",
+"Next, the decision engine evaluates predefined rules. Depending on the configured market conditions, the system can assign an example SIP allocation such as zero, thirty, fifty, seventy-five, or one hundred percent of the planned amount.",
+"Zapier Paths route the result according to the configured conditions. Instead of manually checking the spreadsheet every day, the workflow automatically selects the corresponding action.",
+"Finally, the selected result is sent as a notification through Slack. The user receives the current market values, calculated indicators, and the resulting rule-based SIP allocation in one concise alert.",
+"The complete workflow is simple: a daily schedule triggers the process, market data is collected, indicators are calculated, predefined rules determine the allocation, and the final result is delivered through Slack.",
+"The goal is to make daily SIP monitoring more structured, consistent, and automated. It does not predict the market or guarantee returns. It provides a repeatable decision framework based on predefined rules and market data."
+];
+const dur=[7200,6000,7200,8500,9000,8500,7000,7200,7200,8500];let i=0,paused=false,voiceOn=true,voiceDone=false,voicePaused=false,started=0,pausedAt=0,raf=0,token=0;
+S.forEach((_,n)=>{let d=document.createElement('span');d.className='dot';d.onclick=()=>go(n);D.appendChild(d)});
+function ui(){S.forEach((s,n)=>s.classList.toggle('active',n===i));[...D.children].forEach((d,n)=>d.classList.toggle('on',n===i));B.disabled=i===0;N.textContent=i===9?'Finish':'Next →';T.textContent=`Scene ${i+1} of 10`}
+function speak(){if(!voiceOn||!('speechSynthesis'in window)){voiceDone=true;return}speechSynthesis.cancel();let k=++token,u=new SpeechSynthesisUtterance(text[i]);u.lang='en-US';u.rate=.94;u.pitch=1;u.volume=1;voiceDone=false;u.onend=()=>{if(k===token){voiceDone=true;advanceCheck()}};u.onerror=()=>{if(k===token){voiceDone=true;advanceCheck()}};speechSynthesis.speak(u)}
+function go(n){if(n<0||n>9)return;if('speechSynthesis'in window)speechSynthesis.cancel();token++;i=n;paused=false;voicePaused=false;voiceDone=!voiceOn;pausedAt=0;started=performance.now();Q.textContent='Pause';ui();setTimeout(()=>{if(!paused)speak()},180)}
+function advanceCheck(){if(paused||!voiceDone)return;let e=performance.now()-started;if(e>=dur[i]){if(i<9)go(i+1);else{P.style.width='100%';Q.textContent='Replay'}}}
+function loop(){if(!paused){let e=performance.now()-started,base=dur.slice(0,i).reduce((a,b)=>a+b,0),total=dur.reduce((a,b)=>a+b,0);P.style.width=Math.min(100,(base+Math.min(e,dur[i]))/total*100)+'%';advanceCheck()}raf=requestAnimationFrame(loop)}
+Q.onclick=()=>{if(i===9&&Q.textContent==='Replay'){go(0);return}if(paused){paused=false;started=performance.now()-pausedAt;Q.textContent='Pause';if(voiceOn&&voicePaused&&'speechSynthesis'in window){speechSynthesis.resume();voicePaused=false}}else{paused=true;pausedAt=performance.now()-started;Q.textContent='Resume';if(voiceOn&&'speechSynthesis'in window&&speechSynthesis.speaking){speechSynthesis.pause();voicePaused=true}}};
+V.onclick=()=>{voiceOn=!voiceOn;V.textContent=voiceOn?'Voice: On':'Voice: Off';if(!voiceOn){if('speechSynthesis'in window)speechSynthesis.cancel();token++;voiceDone=true;voicePaused=false;advanceCheck()}else if(!paused)speak()};
+B.onclick=()=>{if(i>0)go(i-1)};N.onclick=()=>{if(i<9)go(i+1);else go(0)};R.onclick=()=>go(0);
+window.onkeydown=e=>{if(e.code==='Space'){e.preventDefault();Q.click()}if(e.key==='ArrowLeft')B.click();if(e.key==='ArrowRight')N.click()};
+window.onbeforeunload=()=>{if('speechSynthesis'in window)speechSynthesis.cancel()};ui();go(0);loop()})();
+</script>
+</body>
+</html>

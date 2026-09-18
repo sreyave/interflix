@@ -1374,127 +1374,7 @@ export default function SipInvestmentAdvisorPage() {
     margin: 0;
   }
 
-  /* ============================================================ */
-  /* WATCH                                                          */
-  /* ============================================================ */
-
-  .watch {
-    text-align: center;
-  }
-
-  .watch__frame {
-    border: 1px dashed var(--surface-3);
-
-    border-radius: 8px;
-
-    background: var(--surface-2);
-
-    padding: 3rem 2rem;
-
-    margin-bottom: 1.5rem;
-  }
-
-  .watch__play-ring {
-    width: 64px;
-    height: 64px;
-
-    border-radius: 50%;
-
-    border: 2px solid var(--surface-3);
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    margin: 0 auto 1.25rem;
-
-    color: var(--text-3);
-
-    transition:
-      border-color 0.18s ease,
-      color 0.18s ease;
-  }
-
-  .watch__frame:hover .watch__play-ring {
-    border-color: var(--accent);
-
-    color: var(--accent);
-  }
-
-  .watch__frame p {
-    color: var(--text-3);
-
-    margin: 0 0 0.4rem;
-
-    font-size: 0.95rem;
-  }
-
-  .watch__progress {
-    height: 3px;
-
-    background: var(--surface-3);
-
-    border-radius: 2px;
-
-    max-width: 320px;
-
-    margin: 1.5rem auto 0;
-
-    overflow: hidden;
-
-    position: relative;
-  }
-
-  .watch__progress::before {
-    content: "";
-
-    position: absolute;
-
-    left: 0;
-    top: 0;
-    bottom: 0;
-
-    width: 38%;
-
-    background: var(--accent);
-  }
-
-  .watch__steps {
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 0.5rem;
-
-    max-width: 340px;
-
-    margin: 1.5rem auto 0;
-
-    text-align: left;
-  }
-
-  .watch__step {
-    display: flex;
-
-    gap: 0.7rem;
-
-    align-items: baseline;
-
-    color: var(--text-2);
-
-    font-size: 0.9rem;
-  }
-
-  .watch__step-n {
-    color: var(--accent);
-
-    font-weight: 700;
-
-    font-family: 'JetBrains Mono', monospace;
-
-    min-width: 18px;
-  }
+  
 
   /* ============================================================ */
   /* EPISODE TRANSITION                                            */
@@ -1923,9 +1803,13 @@ export default function SipInvestmentAdvisorPage() {
 
           <div className="hero__actions">
 
-            <button className="btn btn--primary">
-              <PlayIcon />
-              Watch Demo
+            <button
+              className="btn btn--primary"
+              onClick={() => {
+                window.open("/demos/SIP.html", "_blank");
+              }}
+            >
+              <PlayIcon /> Watch Demo
             </button>
 
             <button className="btn btn--ghost">
@@ -2827,60 +2711,7 @@ Time:
       </Section>
 
 
-      {/* ========================================================= */}
-      {/* WATCH                                                       */}
-      {/* ========================================================= */}
-
-      <Section
-        label="Watch"
-        title="Workflow demo"
-      >
-
-        <div className="watch">
-
-          <div className="watch__frame">
-
-            <div className="watch__play-ring">
-              <PlayIcon />
-            </div>
-
-            <p className="label">
-              SIP Investment Advisor — Workflow Demo
-            </p>
-
-            <div className="watch__progress" />
-
-            <div className="watch__steps">
-
-              {DEMO_STEPS.map((step, i) => (
-                <div
-                  className="watch__step"
-                  key={step}
-                >
-
-                  <span className="watch__step-n">
-                    {i + 1}
-                  </span>
-
-                  <span>
-                    {step}
-                  </span>
-
-                </div>
-              ))}
-
-            </div>
-
-          </div>
-
-          <button className="btn btn--ghost">
-            <PlayIcon />
-            Play Demo
-          </button>
-
-        </div>
-
-      </Section>
+      
 
 
       {/* ========================================================= */}
