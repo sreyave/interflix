@@ -317,20 +317,7 @@ export default function TrendIntelligencePage() {
         .scene-item .label { color: var(--text-3); margin-bottom: 0.35rem; }
         .scene-item p { margin: 0; color: var(--text-2); line-height: 1.6; font-size: 0.95rem; }
 
-        /* Watch */
-        .watch {
-          text-align: center;
-        }
-        .watch__frame {
-          border: 1px dashed var(--surface-3);
-          border-radius: 8px;
-          background: var(--surface-2);
-          padding: 3.5rem 2rem;
-          margin-bottom: 1.5rem;
-        }
-        .watch__frame p { color: var(--text-3); margin: 0 0 0.4rem; font-size: 0.95rem; }
-        .watch__frame p.label { margin-bottom: 0.75rem; }
-
+        
         @media (max-width: 767px) {
         .hero,
         .section {
@@ -384,47 +371,71 @@ export default function TrendIntelligencePage() {
       `}</style>
 
       {/* Hero */}
+      {/* Hero */}
       <header className="hero">
 
-      <div className="hero__image-wrap">
-        <img
-          src="/images/trend.png"
-          alt=""
-          className="hero__image"
-        />
-      </div>
-
-      <div className="hero__scrim" aria-hidden="true" />
-
-      <div className="hero__content">
-        <div className="hero__meta">
-          <span>S1 &middot; EP07</span>
-          <span>AI &middot; DATA &middot; CLIENT ENGAGEMENT</span>
+        <div className="hero__image-wrap">
+          <img
+            src="/images/trend.png"
+            alt=""
+            className="hero__image"
+          />
         </div>
 
-        <h1 className="hero__title">
-          Trend Intelligence
-        </h1>
+        <div className="hero__scrim" aria-hidden="true" />
 
-        <p className="hero__tagline">
-          &ldquo;Turning cybersecurity chatter into board-ready Digital Trust intelligence.&rdquo;
-        </p>
+        <div className="hero__content">
 
-        <div className="hero__actions">
-          <button className="btn btn--primary">
-            <PlayIcon /> Watch Demo
-          </button>
+          <div className="hero__meta">
+            <span>S1 &middot; EP07</span>
+            <span>AI &middot; DATA &middot; CLIENT ENGAGEMENT</span>
+          </div>
 
-          <button className="btn btn--ghost">
-            <InfoIcon /> More Info
-          </button>
+          <h1 className="hero__title">
+            Trend Intelligence
+          </h1>
+
+          <p className="hero__tagline">
+            &ldquo;Turning cybersecurity chatter into board-ready Digital Trust intelligence.&rdquo;
+          </p>
+
+          <div className="hero__actions">
+
+            <button
+              className="btn btn--primary"
+              onClick={() => {
+                window.open("/demos/trend.html", "_blank");
+              }}
+            >
+              <PlayIcon /> Watch Demo
+            </button>
+
+            <button
+              className="btn btn--ghost"
+              onClick={() => {
+                document
+                  .getElementById("synopsis")
+                  ?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                  });
+              }}
+            >
+              <InfoIcon /> More Info
+            </button>
+
+          </div>
+
         </div>
-      </div>
 
-    </header>
+      </header>
 
       {/* Synopsis */}
-      <Section label="Synopsis" title="What this project is">
+      <Section
+        id="synopsis"
+        label="Synopsis"
+        title="What this project is"
+      >
         <div className="synopsis">
           <p>
             A client team needed a faster way to understand what CISOs, GRC
@@ -514,21 +525,7 @@ export default function TrendIntelligencePage() {
         </div>
       </Section>
 
-      {/* Watch */}
-      <Section label="Watch" title="See it in action">
-        <div className="watch">
-          <div className="watch__frame">
-            <p className="label" style={{ color: "var(--text-3)" }}>Project Walkthrough</p>
-            <p>No recorded demo added yet — swap this frame for a video, live embed, or screenshots.</p>
-          </div>
-          {/* EDIT ME: use "Watch Live" + real URL if deployed, or "Play Demo" +
-              recorded video if not. Label recreated/inactive demos clearly,
-              e.g. "Recreated Demo" or "Recorded Demonstration". */}
-          <button className="btn btn--ghost">
-            <PlayIcon /> Play Demo
-          </button>
-        </div>
-      </Section>
+      
     </div>
   );
 }

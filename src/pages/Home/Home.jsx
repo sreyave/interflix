@@ -630,7 +630,12 @@ function Hero({ started, reduced }) {
         </p>
 
         <div className="hero__actions" style={{ "--d": "0.9s" }}>
-          <button className="btn btn--primary btn--magnetic" onClick={() => { window.location.href = "/journey"; }}>
+          <button
+            className="btn btn--primary btn--magnetic"
+            onClick={() => {
+              window.open("/video/intro.mp4", "_blank");
+            }}
+          >
             <PlayIcon /> Watch EP1
           </button>
           <button className="btn btn--glass btn--magnetic" onClick={() => { window.location.href = "/originals/trend-intelligence"; }}>
@@ -781,12 +786,10 @@ const LEARNING = [
   { name: "LangChain", category: "Framework" },
   { name: "Prompt Engineering", category: "Explored" },
   { name: "LLM Providers", category: "Experimented with" },
-  { name: "LCEL", category: "Learned" },
   { name: "Structured Output", category: "Built with" },
   { name: "Sequential Chains", category: "Built with" },
   { name: "Parallel Chains", category: "Built with" },
   { name: "Embeddings", category: "Learned" },
-  { name: "Cosine Similarity", category: "Implemented" },
   { name: "AI Agents", category: "Explored" },
   { name: "AI Automation", category: "Built with" },
   { name: "n8n", category: "Explored" },

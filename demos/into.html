@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Into Production — S01 · EP06 — InternFlix</title>
+<style>
+  :root{
+    --bg:#050505;
+    --bg-raised:#111111;
+    --gold:#E50914;
+    --gold-dim:rgba(229,9,20,.28);
+    --text:#F5F5F5;
+    --text-dim:#B0B0B0;
+    --line:rgba(255,255,255,.09);
+    --glass:rgba(255,255,255,.035);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:"Inter","Söhne",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001s !important; transition-duration:.001s !important;}
+  }
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:fixed; top:0; left:0; right:0; z-index:40;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:calc(18px + env(safe-area-inset-top,0px)) 28px 18px;
+    background:linear-gradient(to bottom, rgba(5,5,5,.9), rgba(5,5,5,0));
+  }
+  .brand{display:flex; align-items:baseline; gap:10px;}
+  .brand .mark{font-weight:800; letter-spacing:.04em; font-size:15px; color:var(--gold);}
+  .brand .ep{font-size:11px; color:var(--text-dim); letter-spacing:.08em;}
+  .episode-title{font-size:12px; color:var(--text-dim); letter-spacing:.12em; position:absolute; left:50%; transform:translateX(-50%);}
+  .back-btn{
+    font-size:12px; letter-spacing:.04em; color:var(--text-dim);
+    background:var(--glass); border:1px solid var(--line); border-radius:100px;
+    padding:8px 16px; cursor:pointer; transition:border-color .2s, color .2s;
+  }
+  .back-btn:hover{color:var(--text); border-color:var(--gold-dim);}
+
+  /* ---------- slides ---------- */
+  .stage{position:fixed; inset:0;}
+  .slide{
+    position:absolute; inset:0;
+    display:flex; align-items:center;
+    padding:110px 8vw 130px;
+    opacity:0; visibility:hidden;
+    transform:translateY(14px);
+    transition:opacity .55s ease, transform .55s ease;
+  }
+  .slide.active{opacity:1; visibility:visible; transform:translateY(0);}
+  .slide-inner{width:100%; max-width:1180px; margin:0 auto;}
+
+  .eyebrow{
+    font-size:11px; color:var(--gold); letter-spacing:.14em; margin-bottom:16px;
+    display:flex; align-items:center; gap:10px; font-weight:700;
+  }
+  .eyebrow::before{content:""; width:22px; height:1px; background:var(--gold);}
+  h1.headline{
+    font-size:clamp(32px,5vw,58px); font-weight:700; line-height:1.05; letter-spacing:-.01em;
+    margin-bottom:18px;
+  }
+  .sub{font-size:clamp(15px,1.6vw,19px); color:var(--text-dim); line-height:1.55; max-width:560px;}
+
+  .twocol{display:grid; grid-template-columns:1.05fr .95fr; gap:60px; align-items:center;}
+
+  /* browser mock */
+  .browser{
+    background:var(--bg-raised); border:1px solid var(--line); border-radius:14px; overflow:hidden;
+    box-shadow:0 40px 80px -30px rgba(0,0,0,.7);
+    opacity:0; transform:translateX(30px);
+    transition:opacity .7s ease .15s, transform .7s ease .15s;
+  }
+  .slide.active .browser{opacity:1; transform:translateX(0);}
+  .browser .bar{display:flex; gap:6px; padding:12px 14px; border-bottom:1px solid var(--line);}
+  .browser .bar span{width:8px; height:8px; border-radius:50%; background:#333;}
+  .browser .body{padding:34px 30px; background:radial-gradient(circle at 30% 0%, rgba(229,9,20,.10), transparent 60%);}
+  .browser .logo{font-size:13px; letter-spacing:.1em; color:var(--gold); margin-bottom:22px; font-weight:700;}
+  .browser h3{font-size:22px; font-weight:700; margin-bottom:8px;}
+  .browser p{font-size:13px; color:var(--text-dim);}
+  .browser .rule{height:1px; background:var(--line); margin:22px 0;}
+  .browser .chips{display:flex; gap:8px; flex-wrap:wrap;}
+  .browser .chip{font-size:11px; color:var(--text-dim); border:1px solid var(--line); border-radius:100px; padding:5px 12px;}
+
+  /* ecosystem */
+  .ecosystem{position:relative; height:340px; display:flex; align-items:center; justify-content:center;}
+  .hub{
+    position:relative; z-index:3; background:var(--bg-raised); border:1px solid var(--gold-dim);
+    border-radius:14px; padding:16px 22px; font-size:14px; font-weight:700; letter-spacing:.02em;
+    box-shadow:0 0 40px -6px var(--gold-dim);
+  }
+  .node-ring{position:absolute; inset:0;}
+  .node{
+    position:absolute; font-size:11.5px; letter-spacing:.03em; color:var(--text-dim);
+    background:var(--glass); border:1px solid var(--line); border-radius:100px; padding:7px 14px;
+    opacity:0; transform:scale(.7);
+    transition:opacity .5s ease, transform .5s ease;
+    white-space:nowrap;
+  }
+  .slide.active .node{opacity:1; transform:scale(1);}
+  .node small{display:block; font-size:9px; color:var(--gold); letter-spacing:.08em; margin-top:1px;}
+
+  /* architecture tree */
+  .tree{display:flex; flex-direction:column; align-items:center; gap:0; font-size:12.5px;}
+  .tbox{
+    background:var(--glass); border:1px solid var(--line); border-radius:10px; padding:9px 16px;
+    letter-spacing:.03em; opacity:0; transform:translateY(10px);
+    transition:opacity .45s ease, transform .45s ease;
+  }
+  .tbox.gold{border-color:var(--gold-dim); color:var(--gold);}
+  .slide.active .tbox{opacity:1; transform:translateY(0);}
+  .connector{width:1px; height:22px; background:var(--line); opacity:0; transition:opacity .4s ease;}
+  .slide.active .connector{opacity:1;}
+  .row{display:flex; gap:14px; justify-content:center; flex-wrap:wrap;}
+  .row-wide{display:flex; gap:10px; justify-content:center; flex-wrap:wrap;}
+  .tech-strip{display:flex; gap:10px; justify-content:center; margin-top:26px; flex-wrap:wrap;}
+  .tech-strip span{font-size:10.5px; color:var(--text-dim); border:1px solid var(--line); border-radius:100px; padding:5px 13px;}
+
+  /* delays for staggered reveal */
+  .d1{transition-delay:.05s} .d2{transition-delay:.18s} .d3{transition-delay:.32s}
+  .d4{transition-delay:.46s} .d5{transition-delay:.6s} .d6{transition-delay:.74s}
+
+  /* journey */
+  .journey{display:flex; align-items:center; gap:4px; flex-wrap:wrap; justify-content:center;}
+  .jstep{
+    font-size:12px; color:var(--text-dim); border:1px solid var(--line); border-radius:100px;
+    padding:9px 16px; background:var(--glass); position:relative;
+  }
+  .jstep.lit{color:#fff; background:var(--gold); border-color:var(--gold);}
+  .jarrow{color:var(--line); font-size:13px;}
+
+  /* use case */
+  .flow-vert{display:flex; flex-direction:column; align-items:center; gap:8px;}
+  .flow-vert .fbox{font-size:13px; color:var(--text-dim);}
+  .flow-vert .fend{
+    color:var(--gold); border:1px solid var(--gold-dim); border-radius:100px; padding:10px 22px;
+    box-shadow:0 0 30px -4px var(--gold-dim); margin-top:6px; font-weight:700;
+  }
+
+  /* role */
+  .role-cards{display:flex; gap:18px; justify-content:center; margin-bottom:30px;}
+  .role-card{
+    background:var(--glass); border:1px solid var(--line); border-radius:12px;
+    padding:20px 26px; font-size:13px; text-align:center; min-width:150px;
+  }
+  .role-card.you{border-color:var(--gold-dim); color:var(--gold);}
+  .plus{align-self:center; color:var(--text-dim);}
+
+  /* takeaway */
+  .takeaway{text-align:center;}
+  .takeaway .big{font-size:clamp(30px,6vw,64px); font-weight:700; line-height:1.08;}
+  .takeaway .gold-word{color:var(--gold);}
+  .takeaway .line{width:34px; height:1px; background:var(--line); margin:26px auto;}
+  .takeaway .quote{max-width:520px; margin:0 auto 34px; color:var(--text-dim); font-size:15px; line-height:1.6;}
+  .takeaway .tag{font-size:11px; color:var(--text-dim); letter-spacing:.1em;}
+  .end-buttons{display:flex; gap:12px; justify-content:center; margin-top:30px;}
+  .btn-solid{
+    background:var(--gold); color:#fff; border:none; border-radius:100px;
+    padding:11px 24px; font-size:13px; font-weight:700; cursor:pointer; letter-spacing:.02em;
+  }
+  .btn-outline{
+    background:transparent; color:var(--text); border:1px solid var(--line); border-radius:100px;
+    padding:11px 24px; font-size:13px; cursor:pointer; letter-spacing:.02em;
+  }
+
+  /* ---------- bottom controls ---------- */
+  .controls{
+    position:fixed; left:0; right:0; bottom:0; z-index:40;
+    background:linear-gradient(to top, rgba(5,5,5,.95), rgba(5,5,5,0));
+    padding:22px 28px calc(26px + env(safe-area-inset-bottom,0px));
+  }
+  .progress-track{
+    max-width:1180px; margin:0 auto 16px; display:flex; gap:6px;
+  }
+  .progress-seg{flex:1; height:3px; background:var(--line); border-radius:2px; overflow:hidden;}
+  .progress-seg i{display:block; height:100%; width:0%; background:var(--gold); transition:width .1s linear;}
+  .progress-seg.done i{width:100%; transition:none;}
+
+  .control-row{max-width:1180px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:18px;}
+  .ctrl-left, .ctrl-right{display:flex; align-items:center; gap:10px;}
+  .ctrl-btn{
+    width:38px; height:38px; border-radius:50%; border:1px solid var(--line); background:var(--glass);
+    color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer;
+    transition:border-color .2s, background .2s;
+  }
+  .ctrl-btn:hover{border-color:var(--gold-dim);}
+  .ctrl-btn.play{width:46px; height:46px; background:var(--gold); border-color:var(--gold); color:#fff;}
+  .ctrl-btn svg{width:16px; height:16px;}
+  .ctrl-btn.play svg{width:18px; height:18px;}
+  .voice-btn{
+    display:flex; align-items:center; gap:8px; font-size:11px; letter-spacing:.06em; color:var(--text-dim);
+    border:1px solid var(--line); background:var(--glass); border-radius:100px; padding:8px 14px; cursor:pointer;
+  }
+  .voice-btn.on{color:var(--gold); border-color:var(--gold-dim);}
+  .slide-label{font-size:11px; color:var(--text-dim); letter-spacing:.08em; min-width:120px; text-align:right;}
+
+  @media (max-width:860px){
+    .twocol{grid-template-columns:1fr; gap:34px;}
+    .browser{max-width:380px; margin:0 auto;}
+    .slide{padding:100px 6vw 150px;}
+    .row{gap:8px;}
+    .role-cards{flex-direction:column; align-items:center;}
+    .journey{gap:6px;}
+    .jstep{padding:7px 12px; font-size:11px;}
+    .ecosystem{height:300px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><span class="mark">INTERNFLIX</span><span class="ep">S01 · EP06</span></div>
+  <div class="episode-title">INTO PRODUCTION</div>
+  <button class="back-btn" id="backBtn">← BACK TO EPISODE</button>
+</div>
+
+<div class="stage" id="stage">
+
+  <!-- SLIDE 0 — INTRO -->
+  <section class="slide active" data-narration="A real client project. Selected Group, a specialist technology recruitment platform, built alongside a senior developer.">
+    <div class="slide-inner takeaway">
+      <div class="eyebrow" style="justify-content:center">INTO PRODUCTION</div>
+      <h1 class="headline">SELECTED GROUP <span class="gold-word">·</span> CASE STUDY</h1>
+      <p class="sub" style="margin:0 auto">A behind-the-project walkthrough of a real client platform I helped build.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 1 — WHAT IS THE PROJECT -->
+  <section class="slide" data-narration="This project is the corporate website for Selected Group, a specialist technology recruitment company — the platform used to present its expertise, services and client work.">
+    <div class="slide-inner twocol">
+      <div>
+        <div class="eyebrow">01 · THE PROJECT</div>
+        <h1 class="headline">Selected Group<br>Corporate Recruitment Platform</h1>
+        <p class="sub">This project is the corporate website for Selected Group, a specialist technology recruitment company — its digital platform for presenting expertise, services, industries, clients and case studies.</p>
+      </div>
+      <div class="browser">
+        <div class="bar"><span></span><span></span><span></span></div>
+        <div class="body">
+          <div class="logo">SELECTED GROUP</div>
+          <h3>Technology Recruitment</h3>
+          <p>Talent &amp; Expertise</p>
+          <div class="rule"></div>
+          <div class="chips">
+            <span class="chip">Services</span><span class="chip">Industries</span><span class="chip">Case Studies</span><span class="chip">Contact</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 2 — WHAT DOES IT DO -->
+  <section class="slide" data-narration="The platform lets potential clients understand Selected Group, explore its recruitment capabilities, review successful client work, and start a conversation.">
+    <div class="slide-inner">
+      <div class="eyebrow">02 · THE PLATFORM</div>
+      <h1 class="headline">What Does It Do?</h1>
+      <p class="sub" style="margin-bottom:30px">The platform lets potential clients understand Selected Group, explore its capabilities, review client work and start a conversation.</p>
+      <div class="ecosystem" id="ecosystem">
+        <div class="hub">SELECTED GROUP</div>
+        <div class="node-ring" id="nodeRing"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 3 — ARCHITECTURE -->
+  <section class="slide" data-narration="Built with React and Vite, split into routing, reusable components and a live API integration, powering pages from Home to detailed case studies for clients like Palantir, Oracle and Apple.">
+    <div class="slide-inner">
+      <div class="eyebrow">03 · ARCHITECTURE</div>
+      <h1 class="headline">How It's Structured</h1>
+      <div class="tree" style="margin-top:22px">
+        <div class="tbox gold d1">SELECTED GROUP WEBSITE</div>
+        <div class="connector d1"></div>
+        <div class="tbox d2">REACT + VITE</div>
+        <div class="connector d2"></div>
+        <div class="row d2">
+          <div class="tbox d3">REACT ROUTER</div>
+          <div class="tbox d3">UI COMPONENTS</div>
+          <div class="tbox d3">API INTEGRATION</div>
+        </div>
+        <div class="connector d3"></div>
+        <div class="row-wide d4">
+          <div class="tbox d4">HOME</div><div class="tbox d4">ABOUT</div><div class="tbox d4">SERVICES</div><div class="tbox d4">CASE STUDIES</div>
+        </div>
+        <div class="connector d5"></div>
+        <div class="row-wide d5">
+          <div class="tbox d5">PALANTIR</div><div class="tbox d5">ORACLE</div><div class="tbox d5">APPLE</div><div class="tbox d5">CELONIS</div><div class="tbox d5">AVIV</div><div class="tbox d5">BEHAVOX</div><div class="tbox d5">OVERIT</div>
+        </div>
+        <div class="tech-strip d6">
+          <span>Tailwind CSS</span><span>Framer Motion</span><span>Lucide React</span><span>JavaScript / JSX</span><span>Backend API (Senior-built)</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 4 — USER FLOW -->
+  <section class="slide" data-narration="A visitor moves from the homepage through services and industries, into a case study, and toward a consultation.">
+    <div class="slide-inner">
+      <div class="eyebrow">04 · USER JOURNEY</div>
+      <h1 class="headline">How A Client Uses It</h1>
+      <p class="sub" style="margin-bottom:34px">A visitor discovers the company, explores its expertise, reviews a case study and moves toward a consultation.</p>
+      <div class="journey" id="journey1">
+        <div class="jstep">Visitor</div><span class="jarrow">→</span>
+        <div class="jstep">Home</div><span class="jarrow">→</span>
+        <div class="jstep">Services</div><span class="jarrow">→</span>
+        <div class="jstep">Industries</div><span class="jarrow">→</span>
+        <div class="jstep">Case Studies</div><span class="jarrow">→</span>
+        <div class="jstep">Full Case Study</div><span class="jarrow">→</span>
+        <div class="jstep">Consultation</div>
+      </div>
+      <div class="journey" id="journey2" style="margin-top:26px; opacity:.85">
+        <div class="jstep">Case Study</div><span class="jarrow">→</span>
+        <div class="jstep">Client Story</div><span class="jarrow">→</span>
+        <div class="jstep">Approach</div><span class="jarrow">→</span>
+        <div class="jstep">Results</div><span class="jarrow">→</span>
+        <div class="jstep">Download PDF</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 5 — USE CASE -->
+  <section class="slide" data-narration="The site exists to move a company from discovering Selected Group to requesting a conversation — from exploration to trust to contact.">
+    <div class="slide-inner takeaway">
+      <div class="eyebrow" style="justify-content:center">05 · USE CASE</div>
+      <h1 class="headline">Why Does It Exist?</h1>
+      <p class="sub" style="margin:0 auto 30px">A company needs technology talent — the site guides them from discovery to a real conversation.</p>
+      <div class="flow-vert">
+        <div class="fbox">Explore Expertise</div>
+        <div class="fbox">Review Services</div>
+        <div class="fbox">Explore Case Studies</div>
+        <div class="fbox">Build Trust</div>
+        <div class="fend">CLIENT CONVERSATION</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 6 — MY ROLE -->
+  <section class="slide" data-narration="I worked alongside a senior developer, contributing to the frontend, integrating the API my senior built into the platform, and implementing and refining parts of the user experience.">
+    <div class="slide-inner takeaway">
+      <div class="eyebrow" style="justify-content:center">06 · COLLABORATION</div>
+      <h1 class="headline">My Role</h1>
+      <div class="role-cards">
+        <div class="role-card">SENIOR<br>DEVELOPER</div>
+        <div class="plus">+</div>
+        <div class="role-card you">ME</div>
+      </div>
+      <p class="sub" style="margin:0 auto">I contributed to the frontend alongside my senior, working within the existing React architecture — implementing and refining parts of the user experience, and integrating the backend API my senior developer built to power live data on the platform. Client requirement, discussion, implementation, review, feedback, refinement.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 7 — TAKEAWAY -->
+  <section class="slide" data-narration="From discovery to client conversation. A real client project taught me that development is about understanding requirements, collaborating and building for real users.">
+    <div class="slide-inner takeaway">
+      <div class="big">FROM DISCOVERY<br>TO <span class="gold-word">CLIENT CONVERSATION</span></div>
+      <div class="line"></div>
+      <p class="quote">A real client project taught me that professional development is more than writing code — it is understanding requirements, collaborating, adapting and building for real users.</p>
+      <div class="tag">INTO PRODUCTION · S01 · EP06</div>
+      <div class="tag" style="margin-top:6px; color:var(--text-dim)">REAL CLIENT. REAL REQUIREMENTS. REAL EXPERIENCE.</div>
+      <div class="end-buttons">
+        <button class="btn-outline" id="backBtn2">← BACK TO EPISODE</button>
+        <button class="btn-solid" id="homeBtn">BACK TO INTERNFLIX</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="controls">
+  <div class="progress-track" id="progressTrack"></div>
+  <div class="control-row">
+    <div class="ctrl-left">
+      <button class="ctrl-btn" id="prevBtn" aria-label="Previous slide">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button class="ctrl-btn play" id="playBtn" aria-label="Play">
+        <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+      <button class="ctrl-btn" id="nextBtn" aria-label="Next slide">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+    <div class="ctrl-right">
+      <button class="voice-btn" id="voiceBtn">🔊 NARRATION: ON</button>
+      <div class="slide-label" id="slideLabel">01 / 08</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total = slides.length;
+  var current = 0;
+  var playing = false;
+  var voiceOn = true;
+  var slideTimer = null;
+  var safetyTimer = null;
+  var SLIDE_MS = 6000; // fallback duration per slide when voice is off
+  var synth = window.speechSynthesis;
+
+  var progressTrack = document.getElementById('progressTrack');
+  var segs = [];
+  for (var i = 0; i < total; i++) {
+    var seg = document.createElement('div');
+    seg.className = 'progress-seg';
+    var fill = document.createElement('i');
+    seg.appendChild(fill);
+    progressTrack.appendChild(seg);
+    segs.push({el:seg, fill:fill});
+  }
+
+  var playBtn = document.getElementById('playBtn');
+  var playIcon = document.getElementById('playIcon');
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+  var voiceBtn = document.getElementById('voiceBtn');
+  var slideLabel = document.getElementById('slideLabel');
+
+  function pad(n){ return n < 10 ? '0'+n : ''+n; }
+
+  function updateLabel(){
+    slideLabel.textContent = pad(current+1) + ' / ' + pad(total);
+  }
+
+  function resetSegs(){
+    segs.forEach(function(s, idx){
+      s.el.classList.toggle('done', idx < current);
+      s.fill.style.width = idx < current ? '100%' : '0%';
+      s.fill.style.transition = 'none';
+    });
+  }
+
+  var playbackId = 0;
+
+  function clearTimers(){
+    clearTimeout(slideTimer);
+    clearTimeout(safetyTimer);
+    slideTimer = null;
+    safetyTimer = null;
+  }
+
+  function stopCurrentPlayback(){
+    playbackId++;
+    clearTimers();
+    if (synth) synth.cancel();
+  }
+
+  function goTo(index, userInitiated){
+    if (index < 0 || index >= total) return;
+    stopCurrentPlayback();
+    slides[current].classList.remove('active');
+    current = index;
+    slides[current].classList.add('active');
+    updateLabel();
+    resetSegs();
+    if (playing) runSlide();
+  }
+
+  function advance(){
+    if (current < total - 1) goTo(current + 1, false);
+    else pause();
+  }
+
+  function next(){
+    if (current < total - 1) goTo(current + 1, true);
+    else pause();
+  }
+
+  function prev(){
+    if (current > 0) goTo(current - 1, true);
+  }
+
+  function runSlide(){
+    clearTimers();
+    var myPlaybackId = ++playbackId;
+    var slideAtStart = current;
+    var seg = segs[slideAtStart];
+    var text = slides[slideAtStart].getAttribute('data-narration') || '';
+
+    seg.fill.style.transition = 'none';
+    seg.fill.style.width = '0%';
+    void seg.fill.offsetWidth;
+
+    function stillCurrent(){
+      return playing && current === slideAtStart && playbackId === myPlaybackId;
+    }
+
+    if (voiceOn && synth && text) {
+      synth.cancel();
+      var utter = new SpeechSynthesisUtterance(text);
+      utter.rate = 1;
+      utter.pitch = 1;
+      var approxMs = Math.max(3600, text.split(' ').length * 340);
+
+      seg.fill.style.transition = 'width ' + approxMs + 'ms linear';
+      seg.fill.style.width = '100%';
+
+      utter.onend = function(){ if (stillCurrent()) advance(); };
+      utter.onerror = function(){ if (stillCurrent()) advance(); };
+      synth.speak(utter);
+
+      safetyTimer = setTimeout(function(){
+        if (stillCurrent()) advance();
+      }, approxMs + 5000);
+    } else {
+      seg.fill.style.transition = 'width ' + SLIDE_MS + 'ms linear';
+      seg.fill.style.width = '100%';
+      slideTimer = setTimeout(function(){
+        if (stillCurrent()) advance();
+      }, SLIDE_MS);
+    }
+  }
+
+  function play(){
+    playing = true;
+    playIcon.outerHTML = '<svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>';
+    playIcon = document.getElementById('playIcon');
+    playBtn.setAttribute('aria-label','Pause');
+    runSlide();
+  }
+
+  function pause(){
+    playing = false;
+    playbackId++;
+    if (synth) synth.cancel();
+    clearTimers();
+    segs[current].fill.style.transition = 'none';
+    playIcon.outerHTML = '<svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+    playIcon = document.getElementById('playIcon');
+    playBtn.setAttribute('aria-label','Play');
+  }
+
+  playBtn.addEventListener('click', function(){ playing ? pause() : play(); });
+  nextBtn.addEventListener('click', function(){ next(); });
+  prevBtn.addEventListener('click', function(){ prev(); });
+
+  voiceBtn.addEventListener('click', function(){
+    voiceOn = !voiceOn;
+    voiceBtn.textContent = voiceOn ? '🔊 NARRATION: ON' : '🔇 NARRATION: OFF';
+    voiceBtn.classList.toggle('on', voiceOn);
+    playbackId++;
+    if (synth) synth.cancel();
+    clearTimers();
+    if (playing) runSlide();
+  });
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight') next();
+    if (e.key === 'ArrowLeft') prev();
+    if (e.key === ' ') { e.preventDefault(); playing ? pause() : play(); }
+  });
+
+  function goBack(){
+    pause();
+    if (window.history.length > 1) window.history.back();
+    else window.location.href = '/';
+  }
+
+  document.getElementById('backBtn').addEventListener('click', goBack);
+  document.getElementById('backBtn2').addEventListener('click', goBack);
+  document.getElementById('homeBtn').addEventListener('click', function(){
+    pause();
+    window.location.href = '/';
+  });
+
+  // build ecosystem nodes (slide 2)
+  (function(){
+    var ring = document.getElementById('nodeRing');
+    var items = [
+      {t:'ABOUT'}, {t:'SERVICES'}, {t:'ENGAGEMENT MODELS'}, {t:'INDUSTRIES'},
+      {t:'CASE STUDIES'}, {t:'GLOBAL REACH'}, {t:'CONTACT'}, {t:'CRM', s:'/crm'}
+    ];
+    var radiusX = 300, radiusY = 130;
+    items.forEach(function(item, i){
+      var angle = (i / items.length) * Math.PI * 2 - Math.PI/2;
+      var x = Math.cos(angle) * radiusX;
+      var y = Math.sin(angle) * radiusY;
+      var node = document.createElement('div');
+      node.className = 'node';
+      node.style.left = 'calc(50% + ' + x + 'px)';
+      node.style.top = 'calc(50% + ' + y + 'px)';
+      node.style.transform = 'translate(-50%,-50%)';
+      node.style.transitionDelay = (i * 0.06) + 's';
+      node.innerHTML = item.t + (item.s ? '<small>'+item.s+'</small>' : '');
+      ring.appendChild(node);
+    });
+  })();
+
+  updateLabel();
+  resetSegs();
+})();
+</script>
+</body>
+</html>

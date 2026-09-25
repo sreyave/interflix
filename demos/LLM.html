@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InternFlix — EP03 LLM Engineering</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+  body {
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #050505;
+    color: #fff;
+  }
+
+  .deck {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    background:
+      radial-gradient(circle at 75% 20%, rgba(45, 100, 180, .16), transparent 34%),
+      radial-gradient(circle at 20% 80%, rgba(120, 40, 180, .12), transparent 30%),
+      #050505;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    padding: clamp(34px, 5vw, 80px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(1.025);
+    transition: opacity .55s ease, transform .65s ease, visibility .55s;
+    overflow: hidden;
+  }
+
+  .slide.active {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+  }
+
+  .slide::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, rgba(0,0,0,.92) 0%, rgba(0,0,0,.62) 52%, rgba(0,0,0,.22) 100%);
+    pointer-events: none;
+  }
+
+  .slide-content {
+    position: relative;
+    z-index: 2;
+    width: min(1180px, 100%);
+    margin: auto;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, rgba(0,0,0,.96), rgba(0,0,0,.55), rgba(0,0,0,.18)),
+      radial-gradient(circle at 75% 45%, rgba(60,130,220,.30), transparent 28%),
+      linear-gradient(135deg, #090d14, #10101a 50%, #060606);
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: .24em;
+    color: #aaa;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+  }
+
+  h1, h2, h3, p { margin-top: 0; }
+  h1 {
+    font-size: clamp(48px, 8vw, 105px);
+    line-height: .92;
+    letter-spacing: -.045em;
+    margin-bottom: 22px;
+  }
+  h2 {
+    font-size: clamp(34px, 5vw, 66px);
+    line-height: .98;
+    letter-spacing: -.035em;
+    margin-bottom: 34px;
+  }
+
+  .subtitle {
+    max-width: 720px;
+    color: #d0d0d0;
+    font-size: clamp(16px, 2vw, 24px);
+    line-height: 1.55;
+  }
+
+  .quote {
+    margin-top: 30px;
+    max-width: 800px;
+    color: #bdbdbd;
+    font-size: 16px;
+    line-height: 1.7;
+    border-left: 2px solid #777;
+    padding-left: 18px;
+  }
+
+  .grid {
+    display: grid;
+    gap: 16px;
+  }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+
+  .card {
+    background: rgba(255,255,255,.055);
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 14px;
+    padding: 22px;
+    backdrop-filter: blur(12px);
+    min-height: 120px;
+    transition: transform .35s ease, background .35s ease;
+  }
+  .card:hover {
+    transform: translateY(-5px);
+    background: rgba(255,255,255,.09);
+  }
+  .card h3 {
+    font-size: 18px;
+    margin-bottom: 9px;
+  }
+  .card p {
+    color: #aaa;
+    font-size: 13px;
+    line-height: 1.55;
+    margin-bottom: 0;
+  }
+
+  .stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: min(650px, 100%);
+    margin: 0 auto;
+  }
+  .node {
+    width: min(520px, 90%);
+    padding: 15px 20px;
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 10px;
+    text-align: center;
+    background: rgba(255,255,255,.055);
+    font-weight: 700;
+    letter-spacing: .04em;
+    animation: float 3s ease-in-out infinite;
+  }
+  .node:nth-child(2) { animation-delay: .15s; }
+  .node:nth-child(3) { animation-delay: .3s; }
+  .node:nth-child(4) { animation-delay: .45s; }
+  .node:nth-child(5) { animation-delay: .6s; }
+
+  .arrow { color: #777; font-size: 20px; }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 24px;
+    justify-content: center;
+  }
+  .chip {
+    border: 1px solid rgba(255,255,255,.13);
+    background: rgba(255,255,255,.045);
+    padding: 9px 13px;
+    border-radius: 999px;
+    font-size: 12px;
+    color: #ccc;
+  }
+
+  .rag-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 45px;
+    align-items: center;
+  }
+
+  .side-box {
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.045);
+    border-radius: 14px;
+    padding: 22px;
+  }
+  .side-box strong { display: block; margin-bottom: 10px; }
+  .side-box p { color: #aaa; line-height: 1.6; font-size: 13px; }
+
+  .pipeline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    flex-wrap: wrap;
+    margin: 30px 0;
+  }
+  .pipe {
+    padding: 14px 15px;
+    border-radius: 10px;
+    background: rgba(255,255,255,.055);
+    border: 1px solid rgba(255,255,255,.12);
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .pipe-arrow { color: #666; }
+
+  .chat {
+    margin-left: auto;
+    width: min(350px, 100%);
+    border: 1px solid rgba(255,255,255,.12);
+    background: #0b0b0b;
+    border-radius: 16px;
+    padding: 16px;
+  }
+  .chat-bar {
+    height: 8px;
+    width: 80px;
+    background: #333;
+    border-radius: 20px;
+    margin-bottom: 18px;
+  }
+  .bubble {
+    width: 82%;
+    padding: 11px;
+    border-radius: 9px;
+    background: #151515;
+    color: #aaa;
+    font-size: 11px;
+    margin-bottom: 10px;
+  }
+  .bubble.right {
+    margin-left: auto;
+    background: #222;
+    color: #ddd;
+  }
+
+  .agent {
+    display: grid;
+    grid-template-columns: 1fr 260px;
+    gap: 50px;
+    align-items: center;
+  }
+
+  .agent-center {
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 50%;
+    width: 190px;
+    height: 190px;
+    margin: 0 auto 20px;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(circle, rgba(80,130,200,.25), rgba(255,255,255,.025) 65%);
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: .08em;
+  }
+
+  .agent-steps {
+    display: grid;
+    gap: 10px;
+  }
+  .agent-step {
+    border: 1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.045);
+    padding: 13px 16px;
+    border-radius: 9px;
+    font-size: 13px;
+  }
+
+  .project {
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.045);
+    border-radius: 15px;
+    padding: 24px;
+  }
+  .project h3 { margin-bottom: 18px; }
+  .mini-flow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    align-items: center;
+    color: #aaa;
+    font-size: 11px;
+  }
+  .mini-flow span {
+    padding: 8px 9px;
+    border-radius: 7px;
+    border: 1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.04);
+    color: #ccc;
+  }
+
+  .footer-note {
+    margin-top: 30px;
+    color: #aaa;
+    font-size: 15px;
+    line-height: 1.6;
+    text-align: center;
+  }
+
+  .controls {
+    position: fixed;
+    z-index: 20;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 15px 24px 18px;
+    background: linear-gradient(transparent, rgba(0,0,0,.94) 45%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  button {
+    border: 1px solid rgba(255,255,255,.18);
+    background: rgba(20,20,20,.82);
+    color: #fff;
+    border-radius: 7px;
+    padding: 9px 14px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  button:hover { background: rgba(255,255,255,.12); }
+
+  .progress {
+    flex: 1;
+    height: 3px;
+    background: rgba(255,255,255,.14);
+    overflow: hidden;
+    border-radius: 10px;
+  }
+  .progress-bar {
+    height: 100%;
+    width: 14.28%;
+    background: #fff;
+    transition: width .4s ease;
+  }
+
+  .counter {
+    color: #999;
+    font-size: 12px;
+    min-width: 48px;
+    text-align: right;
+  }
+
+  .slide-number {
+    position: absolute;
+    right: 5vw;
+    top: 5vh;
+    z-index: 3;
+    color: #777;
+    font-size: 11px;
+    letter-spacing: .15em;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+
+  @media (max-width: 800px) {
+    .grid-3, .grid-2, .rag-layout, .agent {
+      grid-template-columns: 1fr;
+    }
+    .slide { padding: 28px 22px 85px; }
+    h1 { font-size: clamp(43px, 14vw, 75px); }
+    h2 { font-size: clamp(31px, 10vw, 52px); margin-bottom: 22px; }
+    .card { min-height: auto; padding: 17px; }
+    .rag-layout { gap: 22px; }
+    .agent { gap: 25px; }
+    .agent-center { width: 140px; height: 140px; font-size: 17px; }
+    .pipeline { gap: 6px; }
+    .pipe { padding: 10px; font-size: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+  <!-- SLIDE 01 -->
+  <section class="slide active">
+    <div class="hero-bg"></div>
+    <div class="slide-number">01 / 07</div>
+    <div class="slide-content">
+      <div class="eyebrow">S1 · EP03</div>
+      <h1>LLM<br>ENGINEERING</h1>
+      <p class="subtitle">From understanding AI to building with LLMs.</p>
+      <p class="quote">After exploring the AI world, I started learning how LLM-powered applications are actually built.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 02 -->
+  <section class="slide">
+    <div class="slide-number">02 / 07</div>
+    <div class="slide-content">
+      <div class="eyebrow">The foundation</div>
+      <h2>UNDERSTANDING<br>THE LLM STACK</h2>
+      <div class="grid grid-3">
+        <div class="card"><h3>LLMs</h3><p>Understanding language models and how applications interact with them.</p></div>
+        <div class="card"><h3>Hugging Face</h3><p>Exploring pretrained models and pipelines.</p></div>
+        <div class="card"><h3>Tokenization</h3><p>Understanding how text is processed by models.</p></div>
+        <div class="card"><h3>Chat Templates</h3><p>Structuring conversations for chat-based models.</p></div>
+        <div class="card"><h3>Model Access</h3><p>Working with gated models and authentication.</p></div>
+        <div class="card"><h3>LLaMA 3.1</h3><p>Hands-on exploration with an open-weight LLM.</p></div>
+      </div>
+      <p class="quote">The focus shifted from using AI tools to understanding the building blocks behind AI applications.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 03 -->
+  <section class="slide">
+    <div class="slide-number">03 / 07</div>
+    <div class="slide-content">
+      <div class="eyebrow">The application layer</div>
+      <h2>ENTER<br>LANGCHAIN</h2>
+      <div class="stack">
+        <div class="node">USER</div>
+        <div class="arrow">↓</div>
+        <div class="node">PROMPT</div>
+        <div class="arrow">↓</div>
+        <div class="node">LANGCHAIN</div>
+        <div class="arrow">↓</div>
+        <div class="node">LLM</div>
+        <div class="arrow">↓</div>
+        <div class="node">RESPONSE</div>
+      </div>
+      <div class="chips">
+        <span class="chip">Prompt Templates</span>
+        <span class="chip">Chains</span>
+        <span class="chip">Output Parsers</span>
+        <span class="chip">Memory</span>
+        <span class="chip">Agents</span>
+        <span class="chip">Runnables</span>
+      </div>
+      <p class="footer-note">LangChain helped me understand how individual LLM components can be connected into complete application workflows.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 04 -->
+  <section class="slide">
+    <div class="slide-number">04 / 07</div>
+    <div class="slide-content">
+      <div class="eyebrow">Retrieval-Augmented Generation</div>
+      <h2>RAG</h2>
+      <div class="rag-layout">
+        <div>
+          <div class="stack">
+            <div class="node">KNOWLEDGE BASE</div>
+            <div class="arrow">↓</div>
+            <div class="node">RETRIEVAL</div>
+            <div class="arrow">↓</div>
+            <div class="node">RELEVANT CONTEXT</div>
+            <div class="arrow">↓</div>
+            <div class="node">PROMPT</div>
+            <div class="arrow">↓</div>
+            <div class="node">LLM</div>
+            <div class="arrow">↓</div>
+            <div class="node">ANSWER</div>
+          </div>
+        </div>
+        <div>
+          <div class="side-box">
+            <strong>Without RAG</strong>
+            <p>LLM → Answer</p>
+          </div>
+          <br>
+          <div class="side-box">
+            <strong>With RAG</strong>
+            <p>Knowledge → Retrieval → Context → LLM → Answer</p>
+          </div>
+        </div>
+      </div>
+      <p class="quote">The model could now work with information supplied by the application instead of relying only on its existing knowledge.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 05 -->
+  <section class="slide">
+    <div class="slide-number">05 / 07</div>
+    <div class="slide-content">
+      <div class="eyebrow">Practical RAG workflow</div>
+      <h2>FROM DOCUMENTS<br>TO ANSWERS</h2>
+      <div class="pipeline">
+        <div class="pipe">DOCUMENTS</div><span class="pipe-arrow">→</span>
+        <div class="pipe">LOAD</div><span class="pipe-arrow">→</span>
+        <div class="pipe">PROCESS</div><span class="pipe-arrow">→</span>
+        <div class="pipe">RETRIEVE</div><span class="pipe-arrow">→</span>
+        <div class="pipe">ADD CONTEXT</div><span class="pipe-arrow">→</span>
+        <div class="pipe">GENERATE</div>
+      </div>
+
+      <div class="rag-layout">
+        <p class="quote">
+          I learned how a knowledge base can be loaded, retrieved and combined
+          with a system prompt before sending the request to the LLM.
+        </p>
+        <div class="chat">
+          <div class="chat-bar"></div>
+          <div class="bubble">What does the knowledge base say?</div>
+          <div class="bubble right">Relevant context retrieved.</div>
+          <div class="bubble right">Answer generated by the LLM.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 06 -->
+  <section class="slide">
+    <div class="slide-number">06 / 07</div>
+    <div class="slide-content">
+      <div class="eyebrow">Beyond generation</div>
+      <h2>AI AGENTS<br>& AUTOMATION</h2>
+      <div class="agent">
+        <div>
+          <div class="agent-center">AI<br>AGENT</div>
+          <div class="agent-steps">
+            <div class="agent-step">THINK</div>
+            <div class="agent-step">CHOOSE TOOL</div>
+            <div class="agent-step">EXECUTE</div>
+            <div class="agent-step">RESPOND</div>
+          </div>
+        </div>
+        <div class="side-box">
+          <strong>LLMs + Tools + Workflows</strong>
+          <p>AI Agents</p>
+          <p>Zapier</p>
+          <p>Automation</p>
+          <p>Tool-based workflows</p>
+        </div>
+      </div>
+      <p class="quote">I also explored how LLMs can move beyond generating text and become part of automated workflows.</p>
+    </div>
+  </section>
+
+  <!-- SLIDE 07 -->
+  <section class="slide">
+    <div class="slide-number">07 / 07</div>
+    <div class="slide-content">
+      <div class="eyebrow">Putting it together</div>
+      <h2>FROM LEARNING<br>TO BUILDING</h2>
+
+      <div class="grid grid-2">
+        <div class="project">
+          <h3>Meeting Audio → Structured Minutes</h3>
+          <div class="mini-flow">
+            <span>MEETING AUDIO</span> → <span>TRANSCRIPTION</span> → <span>LLM PROCESSING</span> → <span>STRUCTURED MINUTES</span>
+          </div>
+        </div>
+
+        <div class="project">
+          <h3>Knowledge-Based Chatbot</h3>
+          <div class="mini-flow">
+            <span>USER QUESTION</span> → <span>RETRIEVAL</span> → <span>CONTEXT</span> → <span>LLM</span> → <span>ANSWER</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="quote">The goal was no longer just to understand individual technologies, but to combine them into working AI systems.</p>
+
+      <div class="chips">
+        <span class="chip">EP03 · LLM ENGINEERING</span>
+        <span class="chip">NEXT · SIP INVESTMENT ADVISOR</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="controls">
+  <button id="prev">← Back</button>
+  <button id="play">Play</button>
+  <div class="progress"><div class="progress-bar" id="bar"></div></div>
+  <div class="counter" id="counter">01 / 07</div>
+  <button id="next">Next →</button>
+</div>
+
+<script>
+  const slides = [...document.querySelectorAll(".slide")];
+  const bar = document.getElementById("bar");
+  const counter = document.getElementById("counter");
+  const playBtn = document.getElementById("play");
+
+  let current = 0;
+  let playing = false;
+  let timer = null;
+
+
+  const narrations = [
+    `This is episode three of InternFlix: LLM Engineering. After exploring the AI world, I started learning how LLM-powered applications are actually built. This episode marks the shift from understanding what AI can do to understanding how to build with it.`,
+
+    `The first step was understanding the LLM stack. I explored language models, Hugging Face and pretrained model pipelines, tokenization, chat templates, and model access. I also worked hands-on with LLaMA 3.1 and learned how gated models and authentication work. The focus shifted from simply using AI tools to understanding the building blocks behind AI applications.`,
+
+    `Next, I entered the application layer with LangChain. I learned how prompts, language models, parsers, memory, agents, and runnable components can be connected together. Instead of treating an LLM as a single black box, I started seeing it as one component inside a larger application workflow.`,
+
+    `The next major concept was retrieval-augmented generation, or RAG. The basic idea is simple: instead of sending a question directly to an LLM, the application can first retrieve relevant information from a knowledge base, add that context to the prompt, and then generate an answer. This allows the application to work with information supplied by the system.`,
+
+    `I then learned how that knowledge pipeline works in practice. Documents are loaded and processed, relevant information is retrieved, the retrieved context is added to the prompt, and the request is sent to the language model. This connected the concepts I was learning with a practical knowledge-based chatbot workflow.`,
+
+    `I also explored AI agents and automation. Here, the LLM can become part of a larger workflow by reasoning about a task, choosing a tool, executing an action, and then responding. I explored agents, Zapier, automation, and tool-based workflows to understand how LLMs can move beyond generating text and become part of automated systems.`,
+
+    `Finally, the learning started turning into working systems. One practical direction was converting meeting audio into structured minutes through transcription and LLM processing. Another was building a knowledge-based chatbot using retrieval, context, and an LLM. The goal was no longer just to understand individual technologies, but to combine them into working AI systems. This foundation leads into the next episode: the SIP Investment Advisor.`
+  ];
+
+  let narrationToken = 0;
+  let speechSupported = "speechSynthesis" in window;
+  let currentUtterance = null;
+
+  function stopNarration() {
+    narrationToken++;
+    if (speechSupported) {
+      window.speechSynthesis.cancel();
+    }
+    currentUtterance = null;
+  }
+
+  function speakCurrentSlide(token, afterDone) {
+    if (!speechSupported) {
+      afterDone();
+      return;
+    }
+
+    const text = narrations[current];
+    if (!text) {
+      afterDone();
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    currentUtterance = utterance;
+
+    utterance.rate = 0.94;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    utterance.onend = () => {
+      if (token !== narrationToken || currentUtterance !== utterance) return;
+      currentUtterance = null;
+      afterDone();
+    };
+
+    utterance.onerror = (event) => {
+      if (token !== narrationToken || currentUtterance !== utterance) return;
+
+      currentUtterance = null;
+
+      // Do not advance if the speech was intentionally cancelled.
+      if (event.error === "canceled" || event.error === "interrupted") return;
+
+      afterDone();
+    };
+
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function playNarratedSequence() {
+    clearTimeout(timer);
+    stopNarration();
+
+    playing = true;
+    playBtn.textContent = "Pause";
+
+    const token = narrationToken;
+
+    speakCurrentSlide(token, () => {
+      if (!playing || token !== narrationToken) return;
+
+      if (current < slides.length - 1) {
+        showSlide(current + 1, true);
+      } else {
+        playing = false;
+        playBtn.textContent = "Play";
+      }
+    });
+  }
+
+
+  function updateUI() {
+    const percent = ((current + 1) / slides.length) * 100;
+    bar.style.width = percent + "%";
+    counter.textContent =
+      String(current + 1).padStart(2, "0") + " / " +
+      String(slides.length).padStart(2, "0");
+  }
+
+  function showSlide(index, continueNarration = false) {
+    if (index < 0) index = slides.length - 1;
+    if (index >= slides.length) index = 0;
+
+    clearTimeout(timer);
+    stopNarration();
+
+    slides[current].classList.remove("active");
+    current = index;
+    slides[current].classList.add("active");
+    updateUI();
+
+    if (continueNarration) {
+      // Wait one frame so the new slide is fully active before speaking.
+      requestAnimationFrame(() => {
+        if (playing) playNarratedSequence();
+      });
+    }
+  }
+
+  function togglePlay() {
+    if (playing) {
+      playing = false;
+      playBtn.textContent = "Play";
+      clearTimeout(timer);
+      stopNarration();
+      return;
+    }
+
+    playNarratedSequence();
+  }
+
+  document.getElementById("prev").addEventListener("click", () => {
+    playing = false;
+    playBtn.textContent = "Play";
+    clearTimeout(timer);
+    stopNarration();
+    showSlide(current - 1);
+  });
+
+  document.getElementById("next").addEventListener("click", () => {
+    playing = false;
+    playBtn.textContent = "Play";
+    clearTimeout(timer);
+    stopNarration();
+    showSlide(current + 1);
+  });
+
+  playBtn.addEventListener("click", togglePlay);
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      playing = false;
+      playBtn.textContent = "Play";
+      clearTimeout(timer);
+      stopNarration();
+      showSlide(current + 1);
+    }
+
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      playing = false;
+      playBtn.textContent = "Play";
+      clearTimeout(timer);
+      stopNarration();
+      showSlide(current - 1);
+    }
+
+    if (e.key.toLowerCase() === "p") {
+      e.preventDefault();
+      togglePlay();
+    }
+  });
+
+  // Start on the first slide. Narration begins only when Play is pressed.
+  showSlide(0);
+</script>
+
+</body>
+</html>

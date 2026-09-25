@@ -447,26 +447,7 @@ export default function LLMEngineeringPage() {
         .transition-arrow { color: var(--text-3); font-size: 1.2rem; text-align: center; }
         .transition-cta { text-align: center; margin-top: 2rem; }
 
-        /* Watch */
-        .watch { text-align: center; }
-        .watch__frame {
-          border: 1px dashed var(--surface-3);
-          border-radius: 8px;
-          background: var(--surface-2);
-          padding: 2.5rem 2rem;
-          margin-bottom: 1.5rem;
-          text-align: left;
-        }
-        .watch__frame-title {
-          color: var(--text-3); margin: 0 0 1.25rem; font-size: 0.95rem; text-align: center;
-        }
-        .watch__code {
-          background: var(--surface); border: 1px solid var(--surface-3);
-          border-radius: 6px; padding: 1.25rem 1.5rem;
-          color: var(--text-2); font-size: 0.9rem; line-height: 1.9;
-          max-width: 360px; margin: 0 auto; text-align: center;
-        }
-        .watch__code-arrow { color: var(--accent); }
+        
 
         @media (max-width: 1199px) {
         .hero,
@@ -547,7 +528,7 @@ export default function LLMEngineeringPage() {
             src="/images/llm.png"
             alt=""
             className="hero__image"
-          />
+        />
         </div>
 
         {/* Circuit / engineering graphic */}
@@ -573,13 +554,27 @@ export default function LLMEngineeringPage() {
           </p>
 
           <div className="hero__actions">
-            <button className="btn btn--primary">
+
+            <button
+              className="btn btn--primary"
+              onClick={() => {
+                window.open("/demos/LLM.html", "_blank");
+              }}
+            >
               <PlayIcon /> Play Episode
             </button>
 
-            <button className="btn btn--ghost">
+            <button
+              className="btn btn--ghost"
+              onClick={() => {
+                document.getElementById("synopsis")?.scrollIntoView({
+                  behavior: "smooth"
+                });
+              }}
+            >
               <InfoIcon /> More Info
             </button>
+
           </div>
 
         </div>
@@ -763,27 +758,7 @@ export default function LLMEngineeringPage() {
         </div>
       </Section>
 
-      {/* Watch */}
-      <Section label="Watch" title="Experiment reel">
-        <div className="watch">
-          <div className="watch__frame">
-            <p className="watch__frame-title label" style={{ color: "var(--text-3)" }}>LLM Engineering &mdash; Experiment Reel</p>
-            <div className="watch__code mono">
-              PromptTemplate<br />
-              <span className="watch__code-arrow">+</span> LLM<br />
-              <span className="watch__code-arrow">&darr;</span><br />
-              Chain<br />
-              <span className="watch__code-arrow">&darr;</span><br />
-              Structured Output
-            </div>
-          </div>
-          {/* EDIT ME: swap for a real screen recording once one exists; until
-              then this stays labeled as a reel of experiments, not a demo */}
-          <button className="btn btn--ghost">
-            <PlayIcon /> View Experiment Reel
-          </button>
-        </div>
-      </Section>
+      
     </div>
   );
 }

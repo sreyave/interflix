@@ -366,10 +366,7 @@ export default function IntoProduction() {
         .cast-group__label { font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); margin: 0 0 0.6rem; }
         .cast-group__items { display: flex; flex-wrap: wrap; gap: 0.6rem; }
 
-        /* Watch */
-        .ep06-watch { text-align: left; }
-        .ep06-watch__frame { border: 1px dashed var(--surface-3); border-radius: 8px; background: var(--surface-2); padding: 3rem 2rem; margin-bottom: 1.5rem; text-align: center; }
-        .ep06-watch__note { color: var(--text-3); margin: 0; font-size: 0.95rem; }
+       
 
         /* Episode transition */
         .transition { padding: 4.5rem 2rem 5rem; max-width: 720px; margin: 0 auto; border-top: 1px solid var(--surface-2); }
@@ -545,12 +542,15 @@ export default function IntoProduction() {
           </p>
 
           <div className="ep06-hero__actions">
-            <Button
-              variant="primary"
-              onClick={() => scrollTo(watchRef)}
+
+            <button
+              className="btn btn--primary"
+              onClick={() => {
+                window.open("/demos/into.html", "_blank");
+              }}
             >
-              <PlayIcon /> Watch Project
-            </Button>
+              <PlayIcon /> Watch Demo
+            </button>
 
             <Button
               variant="ghost"
@@ -558,6 +558,7 @@ export default function IntoProduction() {
             >
               <PlusIcon /> More Info
             </Button>
+
           </div>
         </div>
 
@@ -792,19 +793,7 @@ export default function IntoProduction() {
         </div>
       </section>
 
-      {/* 13 Watch */}
-      <section className="ep06-section" ref={watchRef}>
-        <div className="ep06-section__inner ep06-watch">
-          <SectionTitle eyebrow="Project Walkthrough" />
-          <div className="ep06-watch__frame">
-            <p className="label" style={{ color: "var(--text-3)" }}>Selected Group Website</p>
-            <p className="ep06-watch__note">No recorded walkthrough added yet — swap this frame for a video, live embed, or screenshots once one exists.</p>
-          </div>
-          <Button variant="ghost">
-            <PlayIcon /> Play Project Walkthrough
-          </Button>
-        </div>
-      </section>
+      
 
       {/* 14 Episode Transition */}
       <section className="transition">

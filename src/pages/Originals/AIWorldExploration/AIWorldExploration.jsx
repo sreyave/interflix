@@ -256,17 +256,61 @@ export default function IntoTheAIWorldPage() {
         }
         .scene-flow__arrow { color: var(--text-3); font-size: 1rem; }
 
-        /* Watch */
-        .watch { text-align: center; }
-        .watch__frame {
-          border: 1px dashed var(--surface-3);
-          border-radius: 8px;
-          background: var(--surface-2);
-          padding: 3.5rem 2rem;
-          margin-bottom: 1.5rem;
+    
+
+        /* Episode Transition */
+        .transition-grid {
+          display: grid;
+          grid-template-columns: 1fr auto 1fr;
+          align-items: center;
+          gap: 1rem;
         }
-        .watch__frame p { color: var(--text-3); margin: 0 0 0.4rem; font-size: 0.95rem; }
-        .watch__frame p.label { margin-bottom: 0.75rem; }
+
+        .transition-card {
+          background: var(--surface-2);
+          border: 1px solid var(--surface-3);
+          border-radius: 8px;
+          padding: 1.4rem 1.3rem;
+        }
+
+        .transition-card--current {
+          border-color: var(--accent);
+          background: #1c0d0e;
+        }
+
+        .transition-card__label {
+          color: var(--text-3);
+          font-size: 0.7rem;
+          font-weight: 700;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          margin: 0 0 0.5rem;
+        }
+
+        .transition-card__ep {
+          font-weight: 700;
+          font-size: 0.98rem;
+          margin: 0 0 0.5rem;
+        }
+
+        .transition-card__line {
+          color: var(--text-2);
+          font-size: 0.88rem;
+          line-height: 1.5;
+          margin: 0;
+          font-style: italic;
+        }
+
+        .transition-arrow {
+          color: var(--text-3);
+          font-size: 1.2rem;
+          text-align: center;
+        }
+
+        .transition-cta {
+          text-align: center;
+          margin-top: 2rem;
+        }
 
         /* Tablet */
         @media (max-width: 1199px) {
@@ -297,6 +341,14 @@ export default function IntoTheAIWorldPage() {
 
           .hero__content {
             max-width: 620px;
+          }
+
+          .transition-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .transition-arrow {
+            transform: rotate(90deg);
           }
 
           .explore-grid {
@@ -517,13 +569,27 @@ export default function IntoTheAIWorldPage() {
           </p>
 
           <div className="hero__actions">
-            <button className="btn btn--primary">
+
+            <button
+              className="btn btn--primary"
+              onClick={() => {
+                window.open("/demos/AIWorld.html", "_blank");
+              }}
+            >
               <PlayIcon /> Play Episode
             </button>
 
-            <button className="btn btn--ghost">
+            <button
+              className="btn btn--ghost"
+              onClick={() => {
+                document.getElementById("synopsis")?.scrollIntoView({
+                  behavior: "smooth"
+                });
+              }}
+            >
               <InfoIcon /> More Info
             </button>
+
           </div>
 
         </div>
@@ -603,18 +669,46 @@ export default function IntoTheAIWorldPage() {
         </div>
       </Section>
 
-      {/* Watch */}
-      <Section label="Watch" title="See it in action">
-        <div className="watch">
-          <div className="watch__frame">
-            <p className="label" style={{ color: "var(--text-3)" }}>Project Walkthrough</p>
-            <p>No recorded demo added yet — swap this frame for a video, live embed, or screenshots.</p>
+      
+      {/* Episode Transition */}
+      <Section
+        label="Episode Transition"
+        title="Where this fits in the season"
+        className="section--wide"
+      >
+        <div className="transition-grid">
+          <div className="transition-card">
+            <p className="transition-card__label">Previously</p>
+            <p className="transition-card__ep">EP01 — The Beginning</p>
+            <p className="transition-card__line">
+              &ldquo;I started exploring AI and discovered the possibilities of LLMs.&rdquo;
+            </p>
           </div>
-          <button className="btn btn--ghost">
-            <PlayIcon /> Play Demo
+
+          <div className="transition-arrow">&rarr;</div>
+
+          <div className="transition-card transition-card--current">
+            <p className="transition-card__label">This Episode</p>
+            <p className="transition-card__ep">EP02 — Into The AI World</p>
+            <p className="transition-card__line">
+              &ldquo;I explored LLMs, providers and prompting through hands-on experiments.&rdquo;
+            </p>
+          </div>
+        </div>
+
+        <div className="transition-cta">
+          <button
+            className="btn btn--primary"
+            onClick={() => {
+              window.location.href = "/originals/llm-engineering";
+            }}
+          >
+            Continue To EP03
           </button>
         </div>
       </Section>
+
+
     </div>
   );
 }
